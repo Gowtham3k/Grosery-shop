@@ -163,7 +163,6 @@ export default function ProductsListScreen({ navigation }) {
           renderItem={({ item }) => (
             <ProductCard
               product={item}
-              onPress={() => navigation.navigate('ProductDetails', { product: item })}
             />
           )}
           ListEmptyComponent={

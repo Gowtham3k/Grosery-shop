@@ -6,14 +6,13 @@ import { COLORS } from '../theme/colors';
 import { useShop } from '../context/ShopContext';
 
 import ProductsListScreen from '../screens/ProductsListScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
-import CartScreen from '../screens/CartScreen';
+import AdminManagementScreen from '../screens/AdminManagementScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { cartItemCount, favoriteProducts } = useShop();
+  const { role } = useShop();
 
   return (
     <Tab.Navigator
@@ -70,40 +69,18 @@ export default function TabNavigator() {
       />
 
       <Tab.Screen
-        name="FavouriteTab"
-        component={FavoritesScreen}
+        name="AdminTab"
+        component={AdminManagementScreen}
         options={{
-          tabBarLabel: 'Favourite',
-          tabBarBadge: favoriteProducts.length > 0 ? favoriteProducts.length : undefined,
-          tabBarBadgeStyle: styles.badge,
+          tabBarLabel: 'Admin',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
               <Ionicons
-                name={focused ? 'heart' : 'heart-outline'}
+                name={focused ? 'shield-checkmark' : 'shield-checkmark-outline'}
                 size={22}
-                color={color}
+                color={focused ? COLORS.accentOrange : color}
               />
-              {focused && <View style={styles.activeDot} />}
-            </View>
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="MyCartTab"
-        component={CartScreen}
-        options={{
-          tabBarLabel: 'My Cart',
-          tabBarBadge: cartItemCount > 0 ? cartItemCount : undefined,
-          tabBarBadgeStyle: styles.badge,
-          tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name={focused ? 'cart' : 'cart-outline'}
-                size={22}
-                color={color}
-              />
-              {focused && <View style={styles.activeDot} />}
+              {focused && <View style={[styles.activeDot, { backgroundColor: COLORS.accentOrange }]} />}
             </View>
           ),
         }}

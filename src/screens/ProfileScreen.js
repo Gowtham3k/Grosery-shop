@@ -14,7 +14,7 @@ import { COLORS } from '../theme/colors';
 import { useShop } from '../context/ShopContext';
 
 export default function ProfileScreen({ navigation }) {
-  const { user, role, setRole, cartItemCount, favoriteProducts } = useShop();
+  const { user, role, setRole } = useShop();
 
   const handleRoleToggle = () => {
     const nextRole = role === 'admin' ? 'customer' : 'admin';
@@ -75,30 +75,22 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Quick Stats Grid */}
         <View style={styles.statsRow}>
-          <TouchableOpacity
-            style={styles.statBox}
-            onPress={() => navigation.navigate('MyCartTab')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="cart" size={22} color={COLORS.primary} />
-            <Text style={styles.statCount}>{cartItemCount}</Text>
-            <Text style={styles.statLabel}>In Cart</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.statBox}
-            onPress={() => navigation.navigate('FavouriteTab')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="heart" size={22} color={COLORS.accentRed} />
-            <Text style={styles.statCount}>{favoriteProducts.length}</Text>
-            <Text style={styles.statLabel}>Favourites</Text>
-          </TouchableOpacity>
+          <View style={styles.statBox}>
+            <Ionicons name="shield-checkmark" size={22} color={role === 'admin' ? COLORS.accentOrange : COLORS.primary} />
+            <Text style={[styles.statCount, { fontSize: 13, textTransform: 'uppercase' }]}>{role}</Text>
+            <Text style={styles.statLabel}>Active Role</Text>
+          </View>
 
           <View style={styles.statBox}>
-            <Ionicons name="receipt" size={22} color={COLORS.accentGreen} />
-            <Text style={styles.statCount}>12</Text>
-            <Text style={styles.statLabel}>Orders</Text>
+            <Ionicons name="checkmark-circle" size={22} color={COLORS.accentGreen} />
+            <Text style={styles.statCount}>Verified</Text>
+            <Text style={styles.statLabel}>Status</Text>
+          </View>
+
+          <View style={styles.statBox}>
+            <Ionicons name="calendar-outline" size={22} color={COLORS.textDark} />
+            <Text style={styles.statCount}>2026</Text>
+            <Text style={styles.statLabel}>Joined</Text>
           </View>
         </View>
 

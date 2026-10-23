@@ -7,9 +7,7 @@ import { useShop } from '../context/ShopContext';
 
 export default function CustomDrawerContent(props) {
   const { navigation } = props;
-  const { user, role, setRole, cartItemCount, favoriteProducts, logout } = useShop();
-
-
+  const { user, role, setRole, logout } = useShop();
 
   const menuItems = [
     {
@@ -24,18 +22,6 @@ export default function CustomDrawerContent(props) {
       label: 'Daily Grocery Products',
       icon: 'storefront-outline',
       targetTab: 'ProductsTab',
-    },
-    {
-      label: 'My Favourites',
-      icon: 'heart-outline',
-      targetTab: 'FavouriteTab',
-      badge: favoriteProducts.length > 0 ? favoriteProducts.length : null,
-    },
-    {
-      label: 'My Cart',
-      icon: 'cart-outline',
-      targetTab: 'MyCartTab',
-      badge: cartItemCount > 0 ? cartItemCount : null,
     },
     {
       label: 'My Profile',
