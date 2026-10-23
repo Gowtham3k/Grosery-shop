@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import DrawerNavigator from './DrawerNavigator';
+import ProductDetailsScreen from '../screens/ProductDetailsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import AdminManagementScreen from '../screens/AdminManagementScreen';
 
@@ -18,6 +19,7 @@ export default function RootNavigator() {
     >
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="MainDrawer" component={DrawerNavigator} />
+      <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="AdminManagement" component={AdminManagementScreen} />
     </Stack.Navigator>

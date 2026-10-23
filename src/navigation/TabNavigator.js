@@ -6,13 +6,14 @@ import { COLORS } from '../theme/colors';
 import { useShop } from '../context/ShopContext';
 
 import ProductsListScreen from '../screens/ProductsListScreen';
-import AdminManagementScreen from '../screens/AdminManagementScreen';
+import FavoritesScreen from '../screens/FavoritesScreen';
+import CartScreen from '../screens/CartScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { role } = useShop();
+  const { cartItemCount, favoriteProducts } = useShop();
 
   return (
     <Tab.Navigator
@@ -69,18 +70,40 @@ export default function TabNavigator() {
       />
 
       <Tab.Screen
-        name="AdminTab"
-        component={AdminManagementScreen}
+        name="FavouriteTab"
+        component={FavoritesScreen}
         options={{
-          tabBarLabel: 'Admin',
+          tabBarLabel: 'Favourite',
+          tabBarBadge: favoriteProducts.length > 0 ? favoriteProducts.length : undefined,
+          tabBarBadgeStyle: styles.badge,
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
               <Ionicons
-                name={focused ? 'shield-checkmark' : 'shield-checkmark-outline'}
+                name={focused ? 'heart' : 'heart-outline'}
                 size={22}
-                color={focused ? COLORS.accentOrange : color}
+                color={color}
               />
-              {focused && <View style={[styles.activeDot, { backgroundColor: COLORS.accentOrange }]} />}
+              {focused && <View style={styles.activeDot} />}
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="MyCartTab"
+        component={CartScreen}
+        options={{
+          tabBarLabel: 'My Cart',
+          tabBarBadge: cartItemCount > 0 ? cartItemCount : undefined,
+          tabBarBadgeStyle: styles.badge,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name={focused ? 'cart' : 'cart-outline'}
+                size={22}
+                color={color}
+              />
+              {focused && <View style={styles.activeDot} />}
             </View>
           ),
         }}
