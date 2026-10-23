@@ -18,7 +18,7 @@ import { COLORS } from '../theme/colors';
 import { useShop, DEFAULT_ACCOUNTS } from '../context/ShopContext';
 
 export default function HomeScreen({ navigation }) {
-  const { role, setRole, login, signup, loginWithPreset } = useShop();
+  const { role, setRole, login, signup, loginWithPreset, accounts, validateCredentials } = useShop();
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
   const [selectedRole, setSelectedRole] = useState(role || 'customer');
@@ -134,22 +134,37 @@ export default function HomeScreen({ navigation }) {
 
   const validateAuthForm = () => {
     const newErrors = {};
-    if (authMode === 'signup' && !name.trim()) {
+
+    if (authMode === 'signin') {
+      const res = validateCredentials({ email, password, role: selectedRole });
+      if (!res.valid) {
+        newErrors[res.field] = res.message;
+        setErrors(newErrors);
+        return false;
+      }
+      setErrors({});
+      return true;
+    }
+
+    // Sign up mode validations
+    if (!name.trim()) {
       newErrors.name = 'Full name is required';
     }
     if (!email.trim()) {
       newErrors.email = 'Email address is required';
     } else if (!/\S+@\S+\.\S+/.test(email.trim())) {
       newErrors.email = 'Please enter a valid email';
+    } else if (accounts && accounts[email.trim().toLowerCase()]) {
+      newErrors.email = 'This email is already registered. Please sign in.';
     }
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    if (authMode === 'signup' && !phone.trim()) {
+    if (!phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (authMode === 'signup' && !/^\d{10}$/.test(phone.trim())) {
+    } else if (!/^\d{10}$/.test(phone.trim())) {
       newErrors.phone = 'Phone must be a 10-digit number';
     }
 
@@ -158,9 +173,10 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleAuthSubmit = () => {
+    if (!validateAuthForm()) return;
+
     if (authMode === 'signin') {
-      const activeEmail = (email && email.trim()) || DEFAULT_ACCOUNTS[selectedRole]?.email || 'customer@grocery.com';
-      login({ email: activeEmail, role: selectedRole });
+      login({ email: email.trim().toLowerCase(), role: selectedRole });
       setRole(selectedRole);
       setAuthModalVisible(false);
       navigation.navigate('MainDrawer');
@@ -168,8 +184,13 @@ export default function HomeScreen({ navigation }) {
     }
 
     // Sign up mode
-    if (!validateAuthForm()) return;
-    signup({ name: name.trim(), email: email.trim(), phone: phone.trim(), role: selectedRole });
+    signup({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone.trim(),
+      password: password,
+      role: selectedRole,
+    });
     setRole(selectedRole);
     setAuthModalVisible(false);
     navigation.navigate('MainDrawer');
@@ -187,7 +208,10 @@ export default function HomeScreen({ navigation }) {
 
   const handleGetStarted = () => {
     setAuthMode('signin');
-    handleQuickFill(selectedRole || 'customer');
+    setSelectedRole('customer');
+    setEmail('');
+    setPassword('');
+    setErrors({});
     setAuthModalVisible(true);
   };
 
@@ -290,7 +314,10 @@ export default function HomeScreen({ navigation }) {
               style={styles.authLinkButton}
               onPress={() => {
                 setAuthMode('signin');
-                handleQuickFill('customer');
+                setSelectedRole('customer');
+                setEmail('');
+                setPassword('');
+                setErrors({});
                 setAuthModalVisible(true);
               }}
               activeOpacity={0.7}
@@ -352,7 +379,7 @@ export default function HomeScreen({ navigation }) {
                     ]}
                     onPress={() => {
                       setSelectedRole('customer');
-                      handleQuickFill('customer');
+                      setErrors({});
                     }}
                     activeOpacity={0.8}
                   >
@@ -378,7 +405,7 @@ export default function HomeScreen({ navigation }) {
                     ]}
                     onPress={() => {
                       setSelectedRole('admin');
-                      handleQuickFill('admin');
+                      setErrors({});
                     }}
                     activeOpacity={0.8}
                   >
@@ -399,6 +426,44 @@ export default function HomeScreen({ navigation }) {
                 </View>
               </View>
 
+              {/* Authorized Credentials Guide & Auto-Fill for Testing */}
+              {authMode === 'signin' && (
+                <View
+                  style={[
+                    styles.authNoticeBox,
+                    selectedRole === 'admin' && styles.authNoticeBoxAdmin,
+                  ]}
+                >
+                  <View style={styles.authNoticeContent}>
+                    <Ionicons
+                      name={selectedRole === 'admin' ? 'shield-checkmark' : 'person'}
+                      size={20}
+                      color={selectedRole === 'admin' ? COLORS.accentOrange : COLORS.primary}
+                    />
+                    <View style={styles.authNoticeTextCol}>
+                      <Text style={styles.authNoticeTitle}>
+                        {selectedRole === 'admin' ? 'Authorized Admin ID' : 'Authorized Customer ID'}
+                      </Text>
+                      <Text style={styles.authNoticeEmail}>
+                        {selectedRole === 'admin'
+                          ? 'admin@grocery.com  (pass: admin123)'
+                          : 'customer@grocery.com  (pass: password123)'}
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.quickFillPill,
+                      selectedRole === 'admin' && styles.quickFillPillAdmin,
+                    ]}
+                    onPress={() => handleQuickFill(selectedRole)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.quickFillPillText}>Auto Fill</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               {authMode === 'signup' && (
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Full Name *</Text>
@@ -407,7 +472,10 @@ export default function HomeScreen({ navigation }) {
                     placeholder="Enter full name"
                     placeholderTextColor="#A0A0A0"
                     value={name}
-                    onChangeText={setName}
+                    onChangeText={(txt) => {
+                      setName(txt);
+                      if (errors.name) setErrors((prev) => ({ ...prev, name: null }));
+                    }}
                   />
                   {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
                 </View>
@@ -417,12 +485,15 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.inputLabel}>Email Address *</Text>
                 <TextInput
                   style={[styles.input, errors.email && styles.inputError]}
-                  placeholder="name@example.com"
+                  placeholder={selectedRole === 'admin' ? 'admin@grocery.com' : 'customer@grocery.com'}
                   placeholderTextColor="#A0A0A0"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(txt) => {
+                    setEmail(txt);
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+                  }}
                 />
                 {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
               </View>
@@ -436,7 +507,10 @@ export default function HomeScreen({ navigation }) {
                     placeholderTextColor="#A0A0A0"
                     keyboardType="phone-pad"
                     value={phone}
-                    onChangeText={setPhone}
+                    onChangeText={(txt) => {
+                      setPhone(txt);
+                      if (errors.phone) setErrors((prev) => ({ ...prev, phone: null }));
+                    }}
                   />
                   {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
                 </View>
@@ -446,11 +520,14 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.inputLabel}>Password *</Text>
                 <TextInput
                   style={[styles.input, errors.password && styles.inputError]}
-                  placeholder="Min 6 characters"
+                  placeholder={selectedRole === 'admin' ? 'admin123' : 'password123'}
                   placeholderTextColor="#A0A0A0"
                   secureTextEntry
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(txt) => {
+                    setPassword(txt);
+                    if (errors.password) setErrors((prev) => ({ ...prev, password: null }));
+                  }}
                 />
                 {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
               </View>
@@ -867,5 +944,60 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: COLORS.textMuted,
+  },
+  authNoticeBox: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  authNoticeBoxAdmin: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FFEDD5',
+  },
+  authNoticeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  authNoticeTextCol: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  authNoticeTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.primaryDark,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  authNoticeEmail: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textDark,
+    marginTop: 2,
+  },
+  quickFillPill: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    ...Platform.select({
+      web: { cursor: 'pointer' },
+    }),
+  },
+  quickFillPillAdmin: {
+    backgroundColor: COLORS.accentOrange,
+  },
+  quickFillPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.white,
   },
 });

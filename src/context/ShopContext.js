@@ -57,6 +57,12 @@ export const ShopProvider = ({ children }) => {
   const [user, setUser] = useState(DEFAULT_ACCOUNTS.customer);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
+  // Registered Accounts (supports authentication validation)
+  const [accounts, setAccounts] = useState({
+    'customer@grocery.com': DEFAULT_ACCOUNTS.customer,
+    'admin@grocery.com': DEFAULT_ACCOUNTS.admin,
+  });
+
   // --- Cart Actions with Real-Time Stock Management ---
   const addToCart = (product, quantity = 1) => {
     if (!product || quantity <= 0) return false;
@@ -254,24 +260,106 @@ export const ShopProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
+  const validateCredentials = ({ email, password, role }) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = password || '';
+
+    if (!cleanEmail) {
+      return { valid: false, field: 'email', message: 'Email address is required.' };
+    }
+    if (!cleanPass) {
+      return { valid: false, field: 'password', message: 'Password is required.' };
+    }
+
+    const matchedAccount = accounts[cleanEmail];
+
+    // Case 1: Logging in as ADMIN
+    if (role === 'admin') {
+      if (!matchedAccount) {
+        return {
+          valid: false,
+          field: 'email',
+          message: 'Invalid Admin ID! Only authorized Admin email (admin@grocery.com) can log in.',
+        };
+      }
+      if (matchedAccount.role !== 'admin') {
+        return {
+          valid: false,
+          field: 'email',
+          message: 'Access Denied! This is a Customer account. Please select Customer role.',
+        };
+      }
+      if (matchedAccount.password !== cleanPass) {
+        return {
+          valid: false,
+          field: 'password',
+          message: 'Incorrect Admin password! (Default: admin123)',
+        };
+      }
+      return { valid: true, account: matchedAccount };
+    }
+
+    // Case 2: Logging in as CUSTOMER
+    if (role === 'customer') {
+      if (!matchedAccount) {
+        return {
+          valid: false,
+          field: 'email',
+          message: 'Invalid Customer ID! Please use customer@grocery.com or create an account.',
+        };
+      }
+      if (matchedAccount.role !== 'customer') {
+        return {
+          valid: false,
+          field: 'email',
+          message: 'This is an Admin ID! Please select Admin role to log in.',
+        };
+      }
+      if (matchedAccount.password !== cleanPass) {
+        return {
+          valid: false,
+          field: 'password',
+          message: 'Incorrect Customer password! (Default: password123)',
+        };
+      }
+      return { valid: true, account: matchedAccount };
+    }
+
+    return { valid: false, field: 'email', message: 'Invalid role specified.' };
+  };
+
   const login = ({ email, role = 'customer' }) => {
-    setUser((prev) => ({
-      ...prev,
-      email,
-      name: email.split('@')[0] || 'User',
-      role,
-    }));
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const existing = accounts[cleanEmail];
+    if (existing) {
+      setUser(existing);
+    } else {
+      setUser((prev) => ({
+        ...prev,
+        email: cleanEmail,
+        name: cleanEmail.split('@')[0] || 'User',
+        role,
+      }));
+    }
     setIsAuthenticated(true);
   };
 
-  const signup = ({ name, email, phone, role = 'customer' }) => {
-    setUser((prev) => ({
-      ...prev,
-      name,
-      email,
-      phone,
+  const signup = ({ name, email, phone, password, role = 'customer' }) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const newAcc = {
+      name: name.trim(),
+      email: cleanEmail,
+      phone: phone.trim(),
+      password: password || 'password123',
       role,
+      address: role === 'admin' ? 'Grocery Mart Central Warehouse, Sector 7' : '124 Green Valley Road, Apt 4B',
+      preferredSlot: 'Morning (8:00 AM - 11:00 AM)',
+    };
+    setAccounts((prev) => ({
+      ...prev,
+      [cleanEmail]: newAcc,
     }));
+    setUser(newAcc);
     setIsAuthenticated(true);
   };
 
@@ -320,6 +408,8 @@ export const ShopProvider = ({ children }) => {
     cartTotal,
     cartItemCount,
     DEFAULT_ACCOUNTS,
+    accounts,
+    validateCredentials,
     // Methods
     addToCart,
     updateCartQuantity,
