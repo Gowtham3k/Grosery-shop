@@ -11,9 +11,10 @@ export default function CustomDrawerContent(props) {
 
 
 
-  const menuItems = [
+  // Role-specific drawer navigation
+  const customerMenuItems = [
     {
-      label: 'Home (Sign In / Sign Up)',
+      label: 'Home (Sign In / Switch)',
       icon: 'home-outline',
       action: () => {
         navigation.closeDrawer();
@@ -43,6 +44,32 @@ export default function CustomDrawerContent(props) {
       targetTab: 'ProfileTab',
     },
   ];
+
+  const adminMenuItems = [
+    {
+      label: 'Home (Sign In / Switch)',
+      icon: 'home-outline',
+      action: () => {
+        navigation.closeDrawer();
+        navigation.navigate('Home');
+      },
+    },
+    {
+      label: 'Admin Product List',
+      icon: 'list-outline',
+      action: () => {
+        navigation.navigate('AdminManagement');
+        navigation.closeDrawer();
+      },
+    },
+    {
+      label: 'My Profile',
+      icon: 'person-outline',
+      targetTab: 'ProfileTab',
+    },
+  ];
+
+  const menuItems = role === 'admin' ? adminMenuItems : customerMenuItems;
 
   return (
     <View style={styles.container}>

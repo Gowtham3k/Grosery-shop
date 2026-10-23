@@ -74,37 +74,65 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         {/* Quick Stats Grid */}
-        <View style={styles.statsRow}>
-          <TouchableOpacity
-            style={styles.statBox}
-            onPress={() => navigation.navigate('MyCartTab')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="cart" size={22} color={COLORS.primary} />
-            <Text style={styles.statCount}>{cartItemCount}</Text>
-            <Text style={styles.statLabel}>In Cart</Text>
-          </TouchableOpacity>
+        {role === 'admin' ? (
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statBox}
+              onPress={() => navigation.navigate('AdminManagement')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="cube" size={22} color={COLORS.accentOrange} />
+              <Text style={styles.statCount}>Inventory</Text>
+              <Text style={styles.statLabel}>Manage Stock</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.statBox}
-            onPress={() => navigation.navigate('FavouriteTab')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="heart" size={22} color={COLORS.accentRed} />
-            <Text style={styles.statCount}>{favoriteProducts.length}</Text>
-            <Text style={styles.statLabel}>Favourites</Text>
-          </TouchableOpacity>
+            <View style={styles.statBox}>
+              <Ionicons name="shield-checkmark" size={22} color={COLORS.primary} />
+              <Text style={[styles.statCount, { fontSize: 13 }]}>ADMIN</Text>
+              <Text style={styles.statLabel}>Role Access</Text>
+            </View>
 
-          <View style={styles.statBox}>
-            <Ionicons name="receipt" size={22} color={COLORS.accentGreen} />
-            <Text style={styles.statCount}>12</Text>
-            <Text style={styles.statLabel}>Orders</Text>
+            <View style={styles.statBox}>
+              <Ionicons name="checkmark-circle" size={22} color={COLORS.accentGreen} />
+              <Text style={styles.statCount}>Active</Text>
+              <Text style={styles.statLabel}>Status</Text>
+            </View>
           </View>
-        </View>
+        ) : (
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statBox}
+              onPress={() => navigation.navigate('MyCartTab')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="cart" size={22} color={COLORS.primary} />
+              <Text style={styles.statCount}>{cartItemCount}</Text>
+              <Text style={styles.statLabel}>In Cart</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.statBox}
+              onPress={() => navigation.navigate('FavouriteTab')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="heart" size={22} color={COLORS.accentRed} />
+              <Text style={styles.statCount}>{favoriteProducts.length}</Text>
+              <Text style={styles.statLabel}>Favourites</Text>
+            </TouchableOpacity>
+
+            <View style={styles.statBox}>
+              <Ionicons name="receipt" size={22} color={COLORS.accentGreen} />
+              <Text style={styles.statCount}>12</Text>
+              <Text style={styles.statLabel}>Orders</Text>
+            </View>
+          </View>
+        )}
 
         {/* User Details Section */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionHeader}>Customer Information</Text>
+          <Text style={styles.sectionHeader}>
+            {role === 'admin' ? 'Admin Information' : 'Customer Information'}
+          </Text>
 
           <View style={styles.infoRow}>
             <View style={styles.infoIconBg}>

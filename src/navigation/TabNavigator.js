@@ -10,11 +10,91 @@ import FavoritesScreen from '../screens/FavoritesScreen';
 import CartScreen from '../screens/CartScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
+import AdminManagementScreen from '../screens/AdminManagementScreen';
+
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { cartItemCount, favoriteProducts } = useShop();
+  const { role, cartItemCount, favoriteProducts } = useShop();
 
+  // Admin View: Only Product List, Home, and Profile tabs
+  if (role === 'admin') {
+    return (
+      <Tab.Navigator
+        initialRouteName="AdminProductsTab"
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: styles.tabBar,
+          tabBarShowLabel: true,
+          tabBarActiveTintColor: COLORS.accentOrange,
+          tabBarInactiveTintColor: COLORS.tabInactive,
+          tabBarLabelStyle: styles.tabBarLabel,
+        }}
+      >
+        <Tab.Screen
+          name="HomeTab"
+          component={AdminManagementScreen}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              e.preventDefault();
+              navigation.navigate('Home');
+            },
+          })}
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name={focused ? 'home' : 'home-outline'}
+                  size={22}
+                  color={color}
+                />
+                {focused && <View style={[styles.activeDot, { backgroundColor: COLORS.accentOrange }]} />}
+              </View>
+            ),
+          }}
+        />
+
+        <Tab.Screen
+          name="AdminProductsTab"
+          component={AdminManagementScreen}
+          options={{
+            tabBarLabel: 'Product List',
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name={focused ? 'list' : 'list-outline'}
+                  size={22}
+                  color={color}
+                />
+                {focused && <View style={[styles.activeDot, { backgroundColor: COLORS.accentOrange }]} />}
+              </View>
+            ),
+          }}
+        />
+
+        <Tab.Screen
+          name="ProfileTab"
+          component={ProfileScreen}
+          options={{
+            tabBarLabel: 'Profile',
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.iconContainer}>
+                <Ionicons
+                  name={focused ? 'person' : 'person-outline'}
+                  size={22}
+                  color={color}
+                />
+                {focused && <View style={[styles.activeDot, { backgroundColor: COLORS.accentOrange }]} />}
+              </View>
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    );
+  }
+
+  // Customer View: Full complete shopping tabs (Home, Products, Favourite, Cart, Profile)
   return (
     <Tab.Navigator
       initialRouteName="ProductsTab"

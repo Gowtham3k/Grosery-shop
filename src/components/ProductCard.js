@@ -65,18 +65,20 @@ export default function ProductCard({
           </View>
         )}
 
-        <TouchableOpacity
-          style={[styles.favoriteButton, favorited && styles.favoriteButtonActive]}
-          onPress={handleFavoritePress}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name={favorited ? 'heart' : 'heart-outline'}
-            size={18}
-            color={favorited ? COLORS.accentRed : COLORS.textMuted}
-          />
-        </TouchableOpacity>
+        {role !== 'admin' && (
+          <TouchableOpacity
+            style={[styles.favoriteButton, favorited && styles.favoriteButtonActive]}
+            onPress={handleFavoritePress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={favorited ? 'heart' : 'heart-outline'}
+              size={18}
+              color={favorited ? COLORS.accentRed : COLORS.textMuted}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Large Full Product Image */}
@@ -98,7 +100,7 @@ export default function ProductCard({
         </Text>
       </View>
 
-      {/* Bottom Actions: Admin Toggle / Quick Add to Cart */}
+      {/* Bottom Actions: Admin Stock Toggle OR Customer Add to Cart */}
       <View style={styles.bottomRow}>
         {role === 'admin' ? (
           <TouchableOpacity
@@ -118,26 +120,24 @@ export default function ProductCard({
                 { color: isAvailable ? COLORS.accentGreen : COLORS.accentRed },
               ]}
             >
-              {isAvailable ? `${currentStock} In Stock` : 'Sold Out'}
+              {isAvailable ? `${currentStock} In Stock (Toggle)` : 'Sold Out (Toggle)'}
             </Text>
           </TouchableOpacity>
         ) : (
-          <View />
-        )}
-
-        {showAddToCart && (
-          <TouchableOpacity
-            style={[styles.addButton, !isAvailable && styles.addButtonDisabled]}
-            onPress={handleAddToCartPress}
-            disabled={!isAvailable}
-            activeOpacity={0.75}
-          >
-            <Ionicons
-              name={isAvailable ? 'add' : 'ban'}
-              size={18}
-              color={COLORS.white}
-            />
-          </TouchableOpacity>
+          showAddToCart && (
+            <TouchableOpacity
+              style={[styles.addButton, !isAvailable && styles.addButtonDisabled]}
+              onPress={handleAddToCartPress}
+              disabled={!isAvailable}
+              activeOpacity={0.75}
+            >
+              <Ionicons
+                name={isAvailable ? 'add' : 'ban'}
+                size={18}
+                color={COLORS.white}
+              />
+            </TouchableOpacity>
+          )
         )}
       </View>
     </TouchableOpacity>
